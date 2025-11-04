@@ -48,16 +48,21 @@ jobs:
           # Create or update the default branch
           if git show-ref --verify --quiet refs/heads/$DEFAULT_BRANCH; then
             git checkout $DEFAULT_BRANCH
-            git merge upstream/$DEFAULT_BRANCH --ff-only || git reset --hard upstream/$DEFAULT_BRANCH
+            if ! git merge upstream/$DEFAULT_BRANCH --ff-only; then
+              echo "⚠️ Fast-forward merge failed, performing force reset to upstream/$DEFAULT_BRANCH"
+              git reset --hard upstream/$DEFAULT_BRANCH
+            fi
           else
             git checkout -b $DEFAULT_BRANCH upstream/$DEFAULT_BRANCH
           fi
           
           # Push the default branch
+          echo "📤 Pushing $DEFAULT_BRANCH to origin (force push)"
           git push origin $DEFAULT_BRANCH --force
           
           # Sync all tags
           git fetch upstream --tags
+          echo "📤 Pushing tags to origin (force push)"
           git push origin --tags --force
           
           # Optionally sync other branches (uncomment if needed)
